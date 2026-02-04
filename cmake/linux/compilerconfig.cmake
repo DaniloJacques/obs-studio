@@ -11,6 +11,8 @@ mark_as_advanced(ENABLE_COMPILER_TRACE)
 # gcc options for C
 set(
   _obs_gcc_c_options
+  -march=tigerlake
+  -mtune=tigerlake
   $<$<BOOL:${OBS_COMPILE_DEPRECATION_AS_WARNING}>:-Wno-error=deprecated-declarations>
   -fno-strict-aliasing
   -fopenmp-simd
