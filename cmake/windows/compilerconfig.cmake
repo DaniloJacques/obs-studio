@@ -56,8 +56,12 @@ if(CMAKE_VS_WINDOWS_TARGET_PLATFORM_VERSION VERSION_LESS 10.0.20348)
   )
 endif()
 
-set(_obs_msvc_c_options /MP /Zc:__cplusplus /Zc:preprocessor)
-set(_obs_msvc_cpp_options /MP /Zc:__cplusplus /Zc:preprocessor)
+set(_obs_msvc_c_options /MP /Zc:__cplusplus /Zc:preprocessor /arch:AVX512)
+set(_obs_msvc_cpp_options /MP /Zc:__cplusplus /Zc:preprocessor /arch:AVX512)
+
+# Tiger Lake optimization flags for Clang on Windows
+set(_obs_clang_c_options -march=tigerlake -mtune=tigerlake)
+set(_obs_clang_cxx_options -march=tigerlake -mtune=tigerlake)
 
 if(CMAKE_CXX_STANDARD GREATER_EQUAL 20)
   list(APPEND _obs_msvc_cpp_options /Zc:char8_t-)
