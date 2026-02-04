@@ -44,6 +44,10 @@ set(
   -Wvla
 )
 
+# Tiger Lake optimization flags for Clang on Linux
+set(_obs_clang_c_options -march=tigerlake -mtune=tigerlake)
+set(_obs_clang_cxx_options -march=tigerlake -mtune=tigerlake)
+
 add_compile_options(
   -fopenmp-simd
   "$<$<COMPILE_LANG_AND_ID:C,GNU>:${_obs_gcc_c_options}>"
