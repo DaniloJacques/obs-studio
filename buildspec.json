@@ -1,14 +1,14 @@
 {
     "dependencies": {
         "prebuilt": {
-            "version": "2025-08-23",
-            "baseUrl": "https://github.com/obsproject/obs-deps/releases/download",
-            "label": "Pre-Built obs-deps",
+            "version": "2026-02-11",
+            "baseUrl": "https://github.com/DaniloJacques/obs-deps/releases/download",
+            "label": "Pre-Built obs-deps (Tiger Lake)",
             "hashes": {
                 "macos-universal": "9403bb43fb0a9bb215739a5659ca274fe884dbbbcd22bd9ca781c961fb041c42",
-                "windows-x64": "8de229cff6f1981508c0eb646b35e644633a5855787b9f5d3b90ae2aeb87ffc1",
-                "windows-x86": "fb3c68b75911f292b3206e346053638db1c73605957207445a0a92b33ab5e00a",
-                "windows-arm64": "dd87ba00a6cbc153182fb62b3678a3b5021d1d11eb2730442060937a645eb97e"
+                "windows-x64": "49d0ddebe7ec74bea9186710c387978f0d9b39552d845ca2c9527bfa69a9a6cd",
+                "windows-x86": "5c60daf4695572b30ea219f6b68404547336561545d8fefb0a755a716bd06a69",
+                "windows-arm64": "f00fa363f218d507de2511bef30257cb8823a1d9bdcc830dce0375a1835ea8a3"
             }
         },
         "qt6": {
