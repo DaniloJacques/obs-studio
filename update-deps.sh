@@ -5,11 +5,12 @@
 # Usage: ./update-deps.sh [VERSION]
 #   VERSION: optional, defaults to latest release (e.g. 2026-02-10)
 #
-# Requirements: gh (GitHub CLI), jq
+# Requirements: curl, jq, sha256sum
 
 set -euo pipefail
 
 REPO="DaniloJacques/obs-deps"
+API="https://api.github.com/repos/${REPO}"
 SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
 PRESETS_FILE="${SCRIPT_DIR}/CMakePresets.json"
 
@@ -25,7 +26,7 @@ warn() { echo -e "${YELLOW}[!]${NC} $*"; }
 err()  { echo -e "${RED}[✗]${NC} $*" >&2; }
 
 # Check dependencies
-for cmd in gh jq; do
+for cmd in curl jq sha256sum; do
   if ! command -v "$cmd" &>/dev/null; then
     err "Required command '$cmd' not found. Install it first."
     exit 1
@@ -37,45 +38,48 @@ if [ $# -ge 1 ]; then
   VERSION="$1"
   log "Using specified version: ${VERSION}"
 else
-  VERSION=$(gh release list --repo "$REPO" --limit 1 --json tagName -q '.[0].tagName')
-  if [ -z "$VERSION" ]; then
+  log "Fetching latest release from ${REPO}..."
+  VERSION=$(curl -s "${API}/releases/latest" | jq -r '.tag_name')
+  if [ -z "$VERSION" ] || [ "$VERSION" = "null" ]; then
+    # Fallback: get first release from list
+    VERSION=$(curl -s "${API}/releases?per_page=1" | jq -r '.[0].tag_name')
+  fi
+  if [ -z "$VERSION" ] || [ "$VERSION" = "null" ]; then
     err "No releases found in ${REPO}"
     exit 1
   fi
   log "Latest release: ${VERSION}"
 fi
 
-# Verify release exists
-if ! gh release view "$VERSION" --repo "$REPO" &>/dev/null; then
-  err "Release '${VERSION}' not found in ${REPO}"
-  exit 1
-fi
+echo -e "\n${CYAN}=== Downloading release assets ===${NC}\n"
 
-echo -e "\n${CYAN}=== Fetching release assets ===${NC}\n"
-
-# Download assets to temp dir and compute hashes
 TMPDIR=$(mktemp -d)
 trap "rm -rf $TMPDIR" EXIT
 
 declare -A HASHES
+BASE_URL="https://github.com/${REPO}/releases/download/${VERSION}"
 
 for arch in x64 x86 arm64; do
   FILENAME="windows-deps-${VERSION}-${arch}.zip"
-  ASSET_URL="https://github.com/${REPO}/releases/download/${VERSION}/${FILENAME}"
+  URL="${BASE_URL}/${FILENAME}"
 
-  echo -ne "  Downloading ${FILENAME}... "
-  if gh release download "$VERSION" --repo "$REPO" --pattern "$FILENAME" --dir "$TMPDIR" 2>/dev/null; then
+  echo -ne "  ${FILENAME}... "
+  HTTP_CODE=$(curl -sL -o "${TMPDIR}/${FILENAME}" -w "%{http_code}" "${URL}")
+
+  if [ "$HTTP_CODE" = "200" ]; then
     HASH=$(sha256sum "${TMPDIR}/${FILENAME}" | cut -d ' ' -f 1)
     HASHES["windows-${arch}"]="$HASH"
     echo -e "${GREEN}${HASH:0:16}...${NC}"
   else
-    warn "Not found (skipping ${arch})"
+    warn "Not found (HTTP ${HTTP_CODE}, skipping ${arch})"
+    rm -f "${TMPDIR}/${FILENAME}"
   fi
 done
 
 # Check we got at least x64
 if [ -z "${HASHES[windows-x64]:-}" ]; then
   err "Could not download windows-x64 deps. Aborting."
+  err "Check if the release exists: ${BASE_URL}"
   exit 1
 fi
 
@@ -86,7 +90,6 @@ cp "$PRESETS_FILE" "${PRESETS_FILE}.bak"
 log "Backup saved: CMakePresets.json.bak"
 
 # Update using jq
-# Navigate: configurePresets[name=dependencies].vendor.obsproject.com/obs-studio.dependencies.prebuilt
 UPDATED=$(jq --arg version "$VERSION" \
   --arg base_url "https://github.com/${REPO}/releases/download" \
   --arg hash_x64 "${HASHES[windows-x64]:-}" \
@@ -115,5 +118,5 @@ for key in "${!HASHES[@]}"; do
 done
 
 echo -e "\n${GREEN}Done!${NC} CMakePresets.json updated."
-echo -e "Run ${CYAN}cmake --preset windows-x64${NC} to build with Tiger Lake deps."
+echo -e "Commit and push to trigger CI build with Tiger Lake deps."
 echo -e "\nNote: Qt6 and CEF still point to official obsproject/obs-deps releases."
