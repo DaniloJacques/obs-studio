@@ -1,14 +1,14 @@
 {
     "dependencies": {
         "prebuilt": {
-            "version": "2026-02-11",
+            "version": "2026-02-15",
             "baseUrl": "https://github.com/DaniloJacques/obs-deps/releases/download",
-            "label": "Pre-Built obs-deps (Tiger Lake)",
+            "label": "Pre-Built obs-deps (Tiger Lake + ClangCL SVT-AV1)",
             "hashes": {
                 "macos-universal": "9403bb43fb0a9bb215739a5659ca274fe884dbbbcd22bd9ca781c961fb041c42",
-                "windows-x64": "49d0ddebe7ec74bea9186710c387978f0d9b39552d845ca2c9527bfa69a9a6cd",
-                "windows-x86": "5c60daf4695572b30ea219f6b68404547336561545d8fefb0a755a716bd06a69",
-                "windows-arm64": "f00fa363f218d507de2511bef30257cb8823a1d9bdcc830dce0375a1835ea8a3"
+                "windows-x64": "6ceeb045bd92c228bed1f9b0275481bfe391a08acd7833053ac542eb74e52d3f",
+                "windows-x86": "15f99941cbb974e270e4ceb5a13bfa3bd9e4769f98ae23674380d2ea0944adff",
+                "windows-arm64": "4894b8d4f356a23e9b44e2dd012344a3f989acd7a1e49dff0351d915935628e7"
             }
         },
         "qt6": {
