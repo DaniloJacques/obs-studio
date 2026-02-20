@@ -1,28 +1,28 @@
 {
     "dependencies": {
         "prebuilt": {
-            "version": "2026-02-19",
+            "version": "2026-02-20",
             "baseUrl": "https://github.com/DaniloJacques/obs-deps/releases/download",
-            "label": "Pre-Built obs-deps (Tiger Lake + ClangCL SVT-AV1)",
+            "label": "Pre-Built obs-deps (Tiger Lake + ClangCL SVT-AV1 + x264 LTO)",
             "hashes": {
                 "macos-universal": "9403bb43fb0a9bb215739a5659ca274fe884dbbbcd22bd9ca781c961fb041c42",
-                "windows-x64": "f1f64e0cd412ddceaa4e0a88ead8e1219a1d373e31065ab495dc75db93034b78",
-                "windows-x86": "aed880995ef4c27dbc4f17a138a0241f9eed24a5402913a2db536079cbb23046",
-                "windows-arm64": "509e47642ed6bd93f3e3a7db9e257863f13e7f35de5e32c8b48889371005c2b8"
+                "windows-x64": "66d954df9ef785d1906e0592a0656f70203c9bb27c7b88ff0b1b6dcbe2e5d3ae",
+                "windows-x86": "14f16e24f4ae55ed67747ab002883bab3dbcf414b478ce887fdb6da571446bde",
+                "windows-arm64": "f2b2c6f4ddb705ef84782d05a31597afcc7afd4b3749d0c6534cb3314e9c7532"
             }
         },
         "qt6": {
-            "version": "2026-02-19",
+            "version": "2026-02-20",
             "baseUrl": "https://github.com/DaniloJacques/obs-deps/releases/download",
             "label": "Pre-Built Qt6",
             "hashes": {
                 "macos-universal": "990f11638b80a4509e14e8c315f6e4caa0861e37fcd3113a256fbff835ffca29",
-                "windows-x64": "b97d21655b4815afe428950b08815078b73a4548cc32f87a425b47341fb17725",
-                "windows-arm64": "abc1e4aa88dc9ddea53d8943088bda0d55b16b318b91fd3ac27f1f7507e602c4"
+                "windows-x64": "3aadef4aee6851db72a6fbab216b3723ab4e314f8d00d0508b035916422bff2a",
+                "windows-arm64": "fb4362dddb0d17d1776b59d64bfd45986a5252f538622a0ed621c335d008db39"
             },
             "debugSymbols": {
-                "windows-x64": "3759b0e695500df38a685f13470bade753b5078c7664e9463e96e550d83ec1fd",
-                "windows-arm64": "f6cfdf51836d8314929dcba83f0cfcaf0ac91aa0493f844a9eef7c17857f5852"
+                "windows-x64": "21c8a0842e008433cc56dfbb84e192ddc58d00f89efc73ca2e79a866bda56461",
+                "windows-arm64": "a8f1b011065e6cae440cf0d995a6f7d297c2352397553fc719ff956d1d3b7ab5"
             }
         },
         "cef": {
