@@ -2,6 +2,8 @@
 
 include_guard(GLOBAL)
 
+set(OBS_DEPS_PROFILE "" CACHE STRING "Overrides the prebuilt dependency profile (e.g., 'zen3', 'tigerlake') if specific optimized binaries exist.")
+
 # _check_deps_version: Checks for obs-deps VERSION file in prefix paths
 function(_check_deps_version version)
   set(found FALSE PARENT_SCOPE)
@@ -69,19 +71,30 @@ function(_check_dependencies)
 
     string(JSON data GET ${dependency_data} ${dependency})
     string(JSON version GET ${data} version)
-    string(JSON hash GET ${data} hashes ${platform})
+
+    set(fetch_platform ${platform})
+    set(fetch_arch ${arch})
+    if(OBS_DEPS_PROFILE)
+      string(JSON profile_hash ERROR_VARIABLE profile_error GET ${data} hashes ${platform}-${OBS_DEPS_PROFILE})
+      if(NOT profile_error AND NOT profile_hash STREQUAL "NOTFOUND")
+        set(fetch_platform ${platform}-${OBS_DEPS_PROFILE})
+        set(fetch_arch "${arch}-${OBS_DEPS_PROFILE}")
+      endif()
+    endif()
+
+    string(JSON hash GET ${data} hashes ${fetch_platform})
     string(JSON url GET ${data} baseUrl)
     string(JSON label GET ${data} label)
-    string(JSON revision ERROR_VARIABLE error GET ${data} revision ${platform})
+    string(JSON revision ERROR_VARIABLE error GET ${data} revision ${fetch_platform})
 
-    message(STATUS "Setting up ${label} (${arch})")
+    message(STATUS "Setting up ${label} (${fetch_arch})")
 
     set(file "${${dependency}_filename}")
     set(destination "${${dependency}_destination}")
     string(REPLACE "VERSION" "${version}" file "${file}")
     string(REPLACE "VERSION" "${version}" destination "${destination}")
-    string(REPLACE "ARCH" "${arch}" file "${file}")
-    string(REPLACE "ARCH" "${arch}" destination "${destination}")
+    string(REPLACE "ARCH" "${fetch_arch}" file "${file}")
+    string(REPLACE "ARCH" "${fetch_arch}" destination "${destination}")
     if(revision)
       string(REPLACE "_REVISION" "_v${revision}" file "${file}")
       string(REPLACE "-REVISION" "-v${revision}" file "${file}")
@@ -90,17 +103,17 @@ function(_check_dependencies)
       string(REPLACE "-REVISION" "" file "${file}")
     endif()
 
-    if(EXISTS "${dependencies_dir}/.dependency_${dependency}_${arch}.sha256")
+    if(EXISTS "${dependencies_dir}/.dependency_${dependency}_${fetch_arch}.sha256")
       file(
         READ
-        "${dependencies_dir}/.dependency_${dependency}_${arch}.sha256"
-        OBS_DEPENDENCY_${dependency}_${arch}_HASH
+        "${dependencies_dir}/.dependency_${dependency}_${fetch_arch}.sha256"
+        OBS_DEPENDENCY_${dependency}_${fetch_arch}_HASH
       )
     endif()
 
     set(skip FALSE)
     if(dependency STREQUAL prebuilt OR dependency STREQUAL qt6)
-      if(OBS_DEPENDENCY_${dependency}_${arch}_HASH STREQUAL ${hash})
+      if(OBS_DEPENDENCY_${dependency}_${fetch_arch}_HASH STREQUAL ${hash})
         _check_deps_version(${version})
 
         if(found)
@@ -110,13 +123,13 @@ function(_check_dependencies)
     elseif(dependency STREQUAL cef)
       if(NOT ENABLE_BROWSER)
         set(skip TRUE)
-      elseif(OBS_DEPENDENCY_${dependency}_${arch}_HASH STREQUAL ${hash} AND (CEF_ROOT_DIR AND EXISTS "${CEF_ROOT_DIR}"))
+      elseif(OBS_DEPENDENCY_${dependency}_${fetch_arch}_HASH STREQUAL ${hash} AND (CEF_ROOT_DIR AND EXISTS "${CEF_ROOT_DIR}"))
         set(skip TRUE)
       endif()
     endif()
 
     if(skip)
-      message(STATUS "Setting up ${label} (${arch}) - skipped")
+      message(STATUS "Setting up ${label} (${fetch_arch}) - skipped")
       continue()
     endif()
 
@@ -141,7 +154,7 @@ function(_check_dependencies)
       endif()
     endif()
 
-    if(NOT OBS_DEPENDENCY_${dependency}_${arch}_HASH STREQUAL ${hash})
+    if(NOT OBS_DEPENDENCY_${dependency}_${fetch_arch}_HASH STREQUAL ${hash})
       file(REMOVE_RECURSE "${dependencies_dir}/${destination}")
     endif()
 
@@ -154,7 +167,7 @@ function(_check_dependencies)
       endif()
     endif()
 
-    file(WRITE "${dependencies_dir}/.dependency_${dependency}_${arch}.sha256" "${hash}")
+    file(WRITE "${dependencies_dir}/.dependency_${dependency}_${fetch_arch}.sha256" "${hash}")
 
     if(dependency STREQUAL prebuilt)
       set(VLC_PATH "${dependencies_dir}/${destination}" CACHE PATH "VLC source code directory" FORCE)
@@ -165,7 +178,7 @@ function(_check_dependencies)
       set(CEF_ROOT_DIR "${dependencies_dir}/${destination}" CACHE PATH "CEF root directory" FORCE)
     endif()
 
-    message(STATUS "Setting up ${label} (${arch}) - done")
+    message(STATUS "Setting up ${label} (${fetch_arch}) - done")
   endforeach()
 
   list(REMOVE_DUPLICATES CMAKE_PREFIX_PATH)

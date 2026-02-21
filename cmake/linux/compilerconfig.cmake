@@ -11,9 +11,9 @@ mark_as_advanced(ENABLE_COMPILER_TRACE)
 # gcc options for C
 set(
   _obs_gcc_c_options
-  # Tiger Lake optimization flags
-  -march=tigerlake
-  -mtune=tigerlake
+  # x86-64-v3 optimization flags
+  -march=x86-64-v3
+  -mtune=generic
   $<$<BOOL:${OBS_COMPILE_DEPRECATION_AS_WARNING}>:-Wno-error=deprecated-declarations>
   -fno-strict-aliasing
   -fopenmp-simd
@@ -45,9 +45,9 @@ set(
   -Wvla
 )
 
-# Tiger Lake optimization flags for Clang on Linux
-set(_obs_clang_c_options -march=tigerlake -mtune=tigerlake)
-set(_obs_clang_cxx_options -march=tigerlake -mtune=tigerlake)
+# x86-64-v3 optimization flags for Clang on Linux
+set(_obs_clang_c_options -march=x86-64-v3 -mtune=generic)
+set(_obs_clang_cxx_options -march=x86-64-v3 -mtune=generic)
 
 add_compile_options(
   -fopenmp-simd
