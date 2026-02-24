@@ -135,8 +135,10 @@ jobs:
   windows-build:
     name: Windows 🪟
     strategy:
+      fail-fast: true
       matrix:
         architecture: [x64]
+        profile: [tigerlake, zen3, '']
     runs-on: windows-2022
     needs: check-event
     defaults:
@@ -163,6 +165,7 @@ jobs:
         with:
           target: ${{ matrix.architecture }}
           config: ${{ needs.check-event.outputs.config }}
+          profile: ${{ matrix.profile }}
 
       - name: Package OBS Studio 📀
         uses: ./.github/actions/package-obs
@@ -174,5 +177,5 @@ jobs:
       - name: Upload Artifacts 📡
         uses: actions/upload-artifact@v4
         with:
-          name: obs-studio-windows-${{ matrix.architecture }}-${{ needs.check-event.outputs.commitHash }}
+          name: obs-studio-windows-${{ matrix.architecture }}${{ matrix.profile && format('-{0}', matrix.profile) || '' }}-${{ needs.check-event.outputs.commitHash }}
           path: ${{ github.workspace }}/build_${{ matrix.architecture }}/obs-studio-*-windows-${{ matrix.architecture }}.zip

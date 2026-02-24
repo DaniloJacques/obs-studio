@@ -137,7 +137,7 @@ jobs:
           command: pages publish . --project-name=${{ vars.CF_PAGES_PROJECT }} --commit-hash='${{ steps.setup.outputs.commitHash }}'
 
   auto-release:
-    name: Auto Release (Tiger Lake) 🚀
+    name: Auto Release 🚀
     if: github.event_name == 'push'
     runs-on: ubuntu-24.04
     needs: build-project
@@ -145,6 +145,11 @@ jobs:
       run:
         shell: bash
     steps:
+      - name: Checkout 📥
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+
       - name: Get Metadata 🆔
         id: setup
         run: |
@@ -153,6 +158,19 @@ jobs:
           echo "commitHash=${GITHUB_SHA:0:9}" >> $GITHUB_OUTPUT
           echo "version=$(date +'%-Y-%m-%d')" >> $GITHUB_OUTPUT
           echo "branch=${GITHUB_REF_NAME}" >> $GITHUB_OUTPUT
+
+          # Get commits since last release tag
+          LAST_TAG=$(git describe --tags --abbrev=0 2>/dev/null || echo "")
+          if [ -n "$LAST_TAG" ]; then
+            COMMITS=$(git log --oneline "${LAST_TAG}..HEAD" --no-merges 2>/dev/null || echo "No previous tag found")
+          else
+            COMMITS=$(git log --oneline -10 --no-merges)
+          fi
+          # Store multiline output
+          EOF=$(dd if=/dev/urandom bs=15 count=1 status=none | base64)
+          echo "commits<<$EOF" >> $GITHUB_OUTPUT
+          echo "$COMMITS" >> $GITHUB_OUTPUT
+          echo "$EOF" >> $GITHUB_OUTPUT
 
       - name: Download Build Artifacts 📥
         uses: actions/download-artifact@v4
@@ -169,19 +187,24 @@ jobs:
 
           echo '::group::Collecting artifacts'
 
-          # Windows x64
-          win_dir="obs-studio-windows-x64-${commit_hash}"
-          if [ -d "${win_dir}" ]; then
-            for f in "${win_dir}"/*.zip; do
-              mv -v "${f}" "${root_dir}/OBS-Studio-TigerLake-${version}-Windows-x64.zip"
-            done
-          fi
+          # Windows x64 profiles
+          for profile_suffix in "-tigerlake" "-zen3" ""; do
+            profile_label="${profile_suffix:1}"  # strip leading dash
+            profile_label="${profile_label:-baseline}"
+
+            win_dir="obs-studio-windows-x64${profile_suffix}-${commit_hash}"
+            if [ -d "${win_dir}" ]; then
+              for f in "${win_dir}"/*.zip; do
+                mv -v "${f}" "${root_dir}/OBS-Studio-${version}-Windows-x64${profile_suffix}.zip"
+              done
+            fi
+          done
 
           # Ubuntu x64
           ubuntu_dir="obs-studio-ubuntu-24.04-x86_64-${commit_hash}"
           if [ -d "${ubuntu_dir}" ]; then
             for f in "${ubuntu_dir}"/*.deb; do
-              mv -v "${f}" "${root_dir}/OBS-Studio-TigerLake-${version}-Ubuntu-x64.deb"
+              mv -v "${f}" "${root_dir}/OBS-Studio-${version}-Ubuntu-x64.deb"
             done
           fi
 
@@ -189,7 +212,7 @@ jobs:
           ubuntu_dbg_dir="obs-studio-ubuntu-24.04-x86_64-${commit_hash}-dbgsym"
           if [ -d "${ubuntu_dbg_dir}" ]; then
             for f in "${ubuntu_dbg_dir}"/*.ddeb; do
-              mv -v "${f}" "${root_dir}/OBS-Studio-TigerLake-${version}-Ubuntu-x64-dbgsym.ddeb"
+              mv -v "${f}" "${root_dir}/OBS-Studio-${version}-Ubuntu-x64-dbgsym.ddeb"
             done
           fi
 
@@ -197,27 +220,47 @@ jobs:
           src_dir="obs-studio-ubuntu-24.04-sources-${commit_hash}"
           if [ -d "${src_dir}" ]; then
             for f in "${src_dir}"/*.tar.gz; do
-              mv -v "${f}" "${root_dir}/OBS-Studio-TigerLake-${version}-Sources.tar.gz"
+              mv -v "${f}" "${root_dir}/OBS-Studio-${version}-Sources.tar.gz"
             done
           fi
 
           echo '::endgroup::'
 
-      - name: Generate Checksums 🪪
+      - name: Generate Release Body 📝
         run: |
-          : Generate Checksums 🪪
+          : Generate Release Body 📝
           if [[ "${RUNNER_DEBUG}" ]]; then set -x; fi
           shopt -s extglob nullglob
 
-          echo "### Tiger Lake Optimized OBS Studio" > ${{ github.workspace }}/CHECKSUMS.txt
-          echo "" >> ${{ github.workspace }}/CHECKSUMS.txt
-          echo "Branch: \`${{ steps.setup.outputs.branch }}\`" >> ${{ github.workspace }}/CHECKSUMS.txt
-          echo "Commit: \`${{ steps.setup.outputs.commitHash }}\`" >> ${{ github.workspace }}/CHECKSUMS.txt
-          echo "" >> ${{ github.workspace }}/CHECKSUMS.txt
-          echo "### Checksums" >> ${{ github.workspace }}/CHECKSUMS.txt
-          for file in ${{ github.workspace }}/OBS-Studio-TigerLake-*; do
-            echo "    ${file##*/}: $(sha256sum "${file}" | cut -d " " -f 1)" >> ${{ github.workspace }}/CHECKSUMS.txt
+          cat > ${{ github.workspace }}/RELEASE_BODY.md << 'HEADER'
+          ## ⚡ Performance-Optimized OBS Studio
+
+          | Build | Best For | CPU Requirement |
+          |-------|----------|-----------------|
+          | **`x64`** *(baseline)* | Maximum compatibility | Any x86-64 CPU with AVX2 |
+          | **`x64-zen3`** | AMD Ryzen 5000+ | Zen 3 microarchitecture |
+          | **`x64-tigerlake`** | Intel 11th Gen+ | AVX-512 support |
+
+          > 💡 **Not sure?** Use the **baseline `x64`** build.
+
+          HEADER
+
+          echo "**Branch:** \`${{ steps.setup.outputs.branch }}\`" >> ${{ github.workspace }}/RELEASE_BODY.md
+          echo "**Commit:** \`${{ steps.setup.outputs.commitHash }}\`" >> ${{ github.workspace }}/RELEASE_BODY.md
+          echo "" >> ${{ github.workspace }}/RELEASE_BODY.md
+
+          echo "### 📝 Commits" >> ${{ github.workspace }}/RELEASE_BODY.md
+          echo '```' >> ${{ github.workspace }}/RELEASE_BODY.md
+          echo "${{ steps.setup.outputs.commits }}" >> ${{ github.workspace }}/RELEASE_BODY.md
+          echo '```' >> ${{ github.workspace }}/RELEASE_BODY.md
+          echo "" >> ${{ github.workspace }}/RELEASE_BODY.md
+
+          echo "### 🪪 Checksums" >> ${{ github.workspace }}/RELEASE_BODY.md
+          echo '```' >> ${{ github.workspace }}/RELEASE_BODY.md
+          for file in ${{ github.workspace }}/OBS-Studio-*; do
+            echo "    ${file##*/}: $(sha256sum "${file}" | cut -d " " -f 1)" >> ${{ github.workspace }}/RELEASE_BODY.md
           done
+          echo '```' >> ${{ github.workspace }}/RELEASE_BODY.md
 
       - name: Delete existing release for today 🗑️
         run: |
@@ -233,11 +276,12 @@ jobs:
           draft: false
           prerelease: false
           tag_name: ${{ steps.setup.outputs.version }}
-          name: "OBS Studio Tiger Lake ${{ steps.setup.outputs.version }}"
-          body_path: ${{ github.workspace }}/CHECKSUMS.txt
+          name: "OBS Studio ${{ steps.setup.outputs.version }}"
+          body_path: ${{ github.workspace }}/RELEASE_BODY.md
           files: |
-            ${{ github.workspace }}/OBS-Studio-TigerLake-*.zip
-            ${{ github.workspace }}/OBS-Studio-TigerLake-*.deb
-            ${{ github.workspace }}/OBS-Studio-TigerLake-*.ddeb
-            ${{ github.workspace }}/OBS-Studio-TigerLake-*.tar.gz
+            ${{ github.workspace }}/OBS-Studio-*.zip
+            ${{ github.workspace }}/OBS-Studio-*.deb
+            ${{ github.workspace }}/OBS-Studio-*.ddeb
+            ${{ github.workspace }}/OBS-Studio-*.tar.gz
+
 

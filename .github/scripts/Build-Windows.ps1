@@ -3,7 +3,8 @@ param(
     [ValidateSet('x64', 'arm64')]
     [string] $Target = 'x64',
     [ValidateSet('Debug', 'RelWithDebInfo', 'Release', 'MinSizeRel')]
-    [string] $Configuration = 'RelWithDebInfo'
+    [string] $Configuration = 'RelWithDebInfo',
+    [string] $Profile = ''
 )
 
 $ErrorActionPreference = 'Stop'
@@ -53,6 +54,10 @@ function Build {
     Ensure-Location $ProjectRoot
 
     $CmakeArgs = @('--preset', "windows-ci-${Target}")
+
+    if ( $Profile ) {
+        $CmakeArgs += @('-DOBS_DEPS_PROFILE=' + $Profile)
+    }
 
     $CmakeBuildArgs = @('--build')
     $CmakeInstallArgs = @()
