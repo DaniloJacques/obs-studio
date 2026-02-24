@@ -1,28 +1,30 @@
 {
     "dependencies": {
         "prebuilt": {
-            "version": "2026-02-20",
+            "version": "2026-02-22",
             "baseUrl": "https://github.com/DaniloJacques/obs-deps/releases/download",
-            "label": "Pre-Built obs-deps (Tiger Lake + ClangCL SVT-AV1 + x264 LTO)",
+            "label": "Pre-Built obs-deps (Multi-Profile: TigerLake / Zen3 / x86-64-v3)",
             "hashes": {
                 "macos-universal": "9403bb43fb0a9bb215739a5659ca274fe884dbbbcd22bd9ca781c961fb041c42",
-                "windows-x64": "66d954df9ef785d1906e0592a0656f70203c9bb27c7b88ff0b1b6dcbe2e5d3ae",
-                "windows-x86": "14f16e24f4ae55ed67747ab002883bab3dbcf414b478ce887fdb6da571446bde",
-                "windows-arm64": "f2b2c6f4ddb705ef84782d05a31597afcc7afd4b3749d0c6534cb3314e9c7532"
+                "windows-x64": "8aa1ff15e4d699a3bc4b354d2928270fe89c060627bd948554675f68526351ea",
+                "windows-x64-tigerlake": "759f49b4dd0bc3dc5c6bb02e311213255f20e3153d1b75f8e484a361710545b1",
+                "windows-x64-zen3": "95d168d201cebccc43d8da3b4329f0e34961fb3fd623cd448b2dc319f7b1d4f8",
+                "windows-x86": "8f316b22a0f925598efa136296c391603ec0b7e17a0cc322a266fd4d5aaafefb",
+                "windows-arm64": "f23ec738178e2d438e7306ba0f345abf5bbf78d00342cd68063a5afddaa4a2ec"
             }
         },
         "qt6": {
-            "version": "2026-02-20",
+            "version": "2026-02-22",
             "baseUrl": "https://github.com/DaniloJacques/obs-deps/releases/download",
             "label": "Pre-Built Qt6",
             "hashes": {
                 "macos-universal": "990f11638b80a4509e14e8c315f6e4caa0861e37fcd3113a256fbff835ffca29",
-                "windows-x64": "3aadef4aee6851db72a6fbab216b3723ab4e314f8d00d0508b035916422bff2a",
-                "windows-arm64": "fb4362dddb0d17d1776b59d64bfd45986a5252f538622a0ed621c335d008db39"
+                "windows-x64": "0f9dbf0735334ab85aebffa5632616267edbb64093a6d9b3d847527fdc9ef20a",
+                "windows-arm64": "8c96e4c1dc04df6b62fb84800b4f6babe57e7752d1e871269e8af2c2a5b9fb51"
             },
             "debugSymbols": {
-                "windows-x64": "21c8a0842e008433cc56dfbb84e192ddc58d00f89efc73ca2e79a866bda56461",
-                "windows-arm64": "a8f1b011065e6cae440cf0d995a6f7d297c2352397553fc719ff956d1d3b7ab5"
+                "windows-x64": "fd5b8c6dc4bcfc580b227bd9f7a90d1782af79f90732cd5732a1cc2ccdc3e40f",
+                "windows-arm64": "8da4b5c5e2706718260b57911a815b01d4006db6212a280ffb6c31d3b6957b4d"
             }
         },
         "cef": {
