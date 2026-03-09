@@ -1,30 +1,30 @@
 {
     "dependencies": {
         "prebuilt": {
-            "version": "2026-02-22",
+            "version": "2026-03-09",
             "baseUrl": "https://github.com/DaniloJacques/obs-deps/releases/download",
             "label": "Pre-Built obs-deps (Multi-Profile: TigerLake / Zen3 / x86-64-v3)",
             "hashes": {
                 "macos-universal": "9403bb43fb0a9bb215739a5659ca274fe884dbbbcd22bd9ca781c961fb041c42",
-                "windows-x64": "8aa1ff15e4d699a3bc4b354d2928270fe89c060627bd948554675f68526351ea",
-                "windows-x64-tigerlake": "759f49b4dd0bc3dc5c6bb02e311213255f20e3153d1b75f8e484a361710545b1",
-                "windows-x64-zen3": "95d168d201cebccc43d8da3b4329f0e34961fb3fd623cd448b2dc319f7b1d4f8",
-                "windows-x86": "8f316b22a0f925598efa136296c391603ec0b7e17a0cc322a266fd4d5aaafefb",
-                "windows-arm64": "f23ec738178e2d438e7306ba0f345abf5bbf78d00342cd68063a5afddaa4a2ec"
+                "windows-x64": "0b6c5c6f013bc901ac5572c504f052775e1e6e0d6344fb8ff6afa78b77d71fe5",
+                "windows-x64-tigerlake": "978b3da54deba939400ed77fc67d62a68ae5e0b7206717a2341850d38a70394c",
+                "windows-x64-zen3": "b47784b9f40c5cc8728f55a8a64e333a56e3aa2bb4b0f59b2376ee6f3a7c38e2",
+                "windows-x86": "b4a2f5049cf5b9478c03616b9f08f7b0b117c89d1609c6812c0c0848de46e83b",
+                "windows-arm64": "cab5b11e16f39c4d978754cebe5a038d67760d2eed5fb6bd264c1c038200d8d9"
             }
         },
         "qt6": {
-            "version": "2026-02-22",
+            "version": "2026-03-09",
             "baseUrl": "https://github.com/DaniloJacques/obs-deps/releases/download",
             "label": "Pre-Built Qt6",
             "hashes": {
                 "macos-universal": "990f11638b80a4509e14e8c315f6e4caa0861e37fcd3113a256fbff835ffca29",
-                "windows-x64": "0f9dbf0735334ab85aebffa5632616267edbb64093a6d9b3d847527fdc9ef20a",
-                "windows-arm64": "8c96e4c1dc04df6b62fb84800b4f6babe57e7752d1e871269e8af2c2a5b9fb51"
+                "windows-x64": "cc2881b8999a9dff4254dd5e420dd6409f58941d5ba85f4d91b5643e7f6f006c",
+                "windows-arm64": "54815f7e6ed03db1be6eb70b5307e219ee6e211cb1cfffddfd45c35fba45dbb8"
             },
             "debugSymbols": {
-                "windows-x64": "fd5b8c6dc4bcfc580b227bd9f7a90d1782af79f90732cd5732a1cc2ccdc3e40f",
-                "windows-arm64": "8da4b5c5e2706718260b57911a815b01d4006db6212a280ffb6c31d3b6957b4d"
+                "windows-x64": "b4004a73add7136d8806d858b2d39b8d9a34a9cdc5b502c6fcc7a4b232845f76",
+                "windows-arm64": "bbb4b974cbcb9b76042267386f7c700ccd00a56f5b26f0f2e7fbf3b959d70c69"
             }
         },
         "cef": {
