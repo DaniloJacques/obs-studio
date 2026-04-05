@@ -2,7 +2,12 @@
 
 include_guard(GLOBAL)
 
-set(OBS_DEPS_PROFILE "" CACHE STRING "Overrides the prebuilt dependency profile (e.g., 'zen3', 'tigerlake') if specific optimized binaries exist.")
+set(
+  OBS_DEPS_PROFILE
+  ""
+  CACHE STRING
+  "Overrides the prebuilt dependency profile (e.g., 'zen3', 'tigerlake') if specific optimized binaries exist."
+)
 
 # _check_deps_version: Checks for obs-deps VERSION file in prefix paths
 function(_check_deps_version version)
@@ -150,7 +155,10 @@ function(_check_dependencies)
     elseif(dependency STREQUAL cef)
       if(NOT ENABLE_BROWSER)
         set(skip TRUE)
-      elseif(OBS_DEPENDENCY_${dependency}_${fetch_arch}_HASH STREQUAL ${hash} AND (CEF_ROOT_DIR AND EXISTS "${CEF_ROOT_DIR}"))
+      elseif(
+        OBS_DEPENDENCY_${dependency}_${fetch_arch}_HASH STREQUAL ${hash}
+        AND (CEF_ROOT_DIR AND EXISTS "${CEF_ROOT_DIR}")
+      )
         set(skip TRUE)
       endif()
     endif()
