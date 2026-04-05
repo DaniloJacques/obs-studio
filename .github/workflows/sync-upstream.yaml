@@ -1,0 +1,117 @@
+name: Sync Upstream
+run-name: Sync with upstream obs-studio 🔄
+on:
+  schedule:
+    # Run daily at 06:00 UTC
+    - cron: '0 6 * * *'
+  workflow_dispatch:
+
+permissions:
+  contents: write
+  issues: write
+
+jobs:
+  sync:
+    name: Sync with upstream 🔄
+    runs-on: ubuntu-24.04
+    defaults:
+      run:
+        shell: bash
+    steps:
+      - name: Checkout 📥
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+          token: ${{ github.token }}
+
+      - name: Configure Git 🔧
+        run: |
+          : Configure Git 🔧
+          git config user.name "github-actions[bot]"
+          git config user.email "github-actions[bot]@users.noreply.github.com"
+
+      - name: Add upstream remote 🌐
+        run: |
+          : Add upstream remote 🌐
+          git remote add upstream https://github.com/obsproject/obs-studio.git 2>/dev/null || true
+          git fetch upstream master --no-tags
+
+      - name: Check for new commits 🔍
+        id: check
+        run: |
+          : Check for new commits 🔍
+          if [[ "${RUNNER_DEBUG}" ]]; then set -x; fi
+
+          LOCAL_SHA=$(git rev-parse HEAD)
+          UPSTREAM_SHA=$(git rev-parse upstream/master)
+
+          echo "local=${LOCAL_SHA}" >> $GITHUB_OUTPUT
+          echo "upstream=${UPSTREAM_SHA}" >> $GITHUB_OUTPUT
+
+          if [ "${LOCAL_SHA}" = "${UPSTREAM_SHA}" ]; then
+            echo "needsSync=false" >> $GITHUB_OUTPUT
+            echo "::notice::Already up to date with upstream"
+          else
+            # Check if upstream is ahead
+            BEHIND=$(git rev-list --count HEAD..upstream/master)
+            echo "behind=${BEHIND}" >> $GITHUB_OUTPUT
+
+            if [ "${BEHIND}" -gt 0 ]; then
+              echo "needsSync=true" >> $GITHUB_OUTPUT
+              echo "::notice::Upstream is ${BEHIND} commits ahead"
+
+              # Get list of new commits for the summary
+              COMMITS=$(git log --oneline HEAD..upstream/master --no-merges | head -20)
+              EOF=$(dd if=/dev/urandom bs=15 count=1 status=none | base64)
+              echo "commits<<$EOF" >> $GITHUB_OUTPUT
+              echo "$COMMITS" >> $GITHUB_OUTPUT
+              echo "$EOF" >> $GITHUB_OUTPUT
+            else
+              echo "needsSync=false" >> $GITHUB_OUTPUT
+              echo "::notice::Fork is ahead or diverged, skipping auto-sync"
+            fi
+          fi
+
+      - name: Merge upstream 🔀
+        id: merge
+        if: fromJSON(steps.check.outputs.needsSync)
+        run: |
+          : Merge upstream 🔀
+          if [[ "${RUNNER_DEBUG}" ]]; then set -x; fi
+
+          # Try fast-forward first, then regular merge
+          if git merge --ff-only upstream/master 2>/dev/null; then
+            echo "method=fast-forward" >> $GITHUB_OUTPUT
+            echo "success=true" >> $GITHUB_OUTPUT
+            echo "::notice::Fast-forward merge successful"
+          elif git merge upstream/master --no-edit -m "chore: sync with upstream obs-studio $(date +'%Y-%m-%d')" 2>/dev/null; then
+            echo "method=merge" >> $GITHUB_OUTPUT
+            echo "success=true" >> $GITHUB_OUTPUT
+            echo "::notice::Merge commit created successfully"
+          else
+            git merge --abort 2>/dev/null || true
+            echo "success=false" >> $GITHUB_OUTPUT
+            echo "::error::Merge conflict detected — manual intervention required"
+          fi
+
+      - name: Push changes 📤
+        if: fromJSON(steps.check.outputs.needsSync) && steps.merge.outputs.success == 'true'
+        run: |
+          : Push changes 📤
+          git push origin master
+
+      - name: Create conflict issue 🚨
+        if: fromJSON(steps.check.outputs.needsSync) && steps.merge.outputs.success == 'false'
+        uses: actions/github-script@v7
+        with:
+          script: |
+            const behind = '${{ steps.check.outputs.behind }}';
+            const commits = `${{ steps.check.outputs.commits }}`;
+
+            await github.rest.issues.create({
+              owner: context.repo.owner,
+              repo: context.repo.repo,
+              title: `🚨 Upstream sync conflict — ${behind} commits behind`,
+              body: `## Upstream Sync Failed\n\nAutomatic merge with \`obsproject/obs-studio\` master failed due to conflicts.\n\n**Commits behind:** ${behind}\n\n### New upstream commits\n\`\`\`\n${commits}\n\`\`\`\n\n### Resolution\n1. \`git fetch upstream master\`\n2. \`git merge upstream/master\`\n3. Resolve conflicts manually\n4. \`git push origin master\`\n\n---\n*This issue was created automatically by the sync-upstream workflow.*`,
+              labels: ['upstream-sync', 'conflict']
+            });
